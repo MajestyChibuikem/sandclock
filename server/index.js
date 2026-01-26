@@ -5,8 +5,8 @@ import jwt from 'jsonwebtoken';
 import db from './database.js';
 
 const app = express();
-const PORT = 3001;
-const JWT_SECRET = 'sandclock-secret-key-change-in-production';
+const PORT = process.env.PORT || 3001;
+const JWT_SECRET = process.env.JWT_SECRET || 'sandclock-secret-key-change-in-production';
 
 app.use(cors());
 app.use(express.json());
