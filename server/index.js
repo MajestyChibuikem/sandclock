@@ -264,6 +264,38 @@ app.post('/api/investments', authenticateToken, (req, res) => {
   }
 });
 
+// Withdraw investment (return expected_return to balance)
+app.post('/api/investments/:id/withdraw', authenticateToken, (req, res) => {
+  try {
+    const investment = db.prepare(`
+      SELECT i.*, p.name as package_name
+      FROM investments i
+      JOIN packages p ON i.package_id = p.id
+      WHERE i.id = ? AND i.user_id = ?
+    `).get(req.params.id, req.user.id);
+
+    if (!investment) {
+      return res.status(404).json({ error: 'Investment not found' });
+    }
+
+    if (investment.status !== 'active') {
+      return res.status(400).json({ error: 'Investment already withdrawn' });
+    }
+
+    db.prepare('UPDATE investments SET status = ? WHERE id = ?').run('completed', investment.id);
+    db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(investment.expected_return, req.user.id);
+    db.prepare(`
+      INSERT INTO transactions (user_id, type, amount, description)
+      VALUES (?, 'withdrawal', ?, ?)
+    `).run(req.user.id, investment.expected_return, `Withdrawal from ${investment.package_name}`);
+
+    const user = db.prepare('SELECT id, email, name, balance, role FROM users WHERE id = ?').get(req.user.id);
+    res.json({ success: true, user });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== BALANCE/TRANSACTIONS ROUTES ====================
 
 // Deposit (simulated)
