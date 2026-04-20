@@ -247,9 +247,18 @@ const Portfolio = () => {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-10">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Portfolio</h1>
-          <button onClick={() => setShowDepositModal(true)} className="px-4 sm:px-6 py-2.5 sm:py-3 bg-green-500 text-black font-bold rounded-xl sm:rounded-2xl hover:bg-green-400 transition-all active:scale-95 text-sm sm:text-base">
-            Deposit Funds
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={() => user?.role === 'admin' && setShowDepositModal(true)}
+              disabled={user?.role !== 'admin'}
+              className={`px-4 sm:px-6 py-2.5 sm:py-3 font-bold rounded-xl sm:rounded-2xl text-sm sm:text-base transition-all ${user?.role === 'admin' ? 'bg-green-500 text-black hover:bg-green-400 active:scale-95' : 'bg-gray-700 text-gray-500 cursor-not-allowed'}`}
+            >
+              Deposit Funds
+            </button>
+            {user?.role !== 'admin' && (
+              <span className="text-xs text-gray-500">Deposits are currently unavailable</span>
+            )}
+          </div>
         </div>
 
         {/* Stats - Super Curved */}
@@ -332,7 +341,7 @@ const Portfolio = () => {
       </div>
 
       {/* Modal - Curved */}
-      {showDepositModal && (
+      {showDepositModal && user?.role === 'admin' && (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6">
           <div className="bg-[#0A0A0A] border border-white/10 p-5 sm:p-8 rounded-2xl sm:rounded-[3rem] max-w-md w-full shadow-2xl">
             <h2 className="text-xl sm:text-2xl font-bold mb-2">Deposit</h2>
